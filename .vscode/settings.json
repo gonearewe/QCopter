@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "usart.h": "c",
+        "lcd.h": "c"
+    },
+    "files.exclude": {
+        "**/.d": true,
+        "**/.hex": true,
+        "**/.John Mactavish": true,
+        "**/.map": true,
+        "**/.o": true,
+        "**/.uvoptx": true,
+        "**/.uvprojx": true
+    }
+
+}
