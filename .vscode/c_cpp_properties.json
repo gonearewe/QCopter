@@ -5,11 +5,15 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/HARDWARE/**",
+                "${workspaceFolder}/HARDWARE/LCD/**",
+                "${workspaceFolder}/HARDWARE/**",
                 "${workspaceFolder}/SYSTEM/delay/**",
                 "${workspaceFolder}/SYSTEM/sys/**",
                 "${workspaceFolder}/SYSTEM/usart/**",
                 "${workspaceFolder}/STM32F10x_FWLib/inc",
-                "${workspaceFolder}/Code/**",
+                "${workspaceFolder}/CORE/**",
+                "${workspaceFolder}/HARDWARE/MPU6050/**",
+                "${workspaceFolder}/HARDWARE/MPU6050/eMPL/**",
                 "${workspaceFolder}/USER/**",
                 "C:/Keil_v5NEW/ARM/ARMCC/include"
             ],

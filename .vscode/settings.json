@@ -1,7 +1,10 @@
 {
     "files.associations": {
         "usart.h": "c",
-        "lcd.h": "c"
+        "lcd.h": "c",
+        "timer.h": "c",
+        "hc05.h": "c",
+        "usart3.h": "c"
     },
     "files.exclude": {
         "**/.d": true,
