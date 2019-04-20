@@ -5,148 +5,181 @@
 #include "lcd.h"
 #include "usart.h"
 #include "mpu6050.h"
-#include "usmart.h"   
+#include "usmart.h"
 #include "inv_mpu.h"
-#include "inv_mpu_dmp_motion_driver.h" 
+#include "inv_mpu_dmp_motion_driver.h"
 #include "hc05.h"
 #include "usart3.h"
 #include "hc05.h"
 #include "timer.h"
-#define Kp 10.0f                        // 这里的KpKi是用于调整加速度计修正陀螺仪的速度
-#define Ki 0.008f                        
-#define halfT 0.001f             // 采样周期的一半，用于求解四元数微分方程时计算角增量
-#define T 1000
-#define STEP 100
-void MPU6050_Report(short pitch,short roll,short yaw);
+
+#define STEP 1
+#define T 10
+void MPU6050_Report(short pitch, short roll, short yaw);
 //PA5 SCL PA7 SDA
 //PA3 RX2 PA2 TX2
-//PA6 PWM1 PA8 PWM2 PA11 PWM3 PB1 PWM4 
-//串口1发送1个字符 
-//c:要发送的字符
-void usart1_send_char(u8 c)
-{   	
-	while(USART_GetFlagStatus(USART1,USART_FLAG_TC)==RESET); //循环发送,直到发送完毕   
-	USART_SendData(USART1,c);  
-} 
+//PA6 PWM1 PA8 PWM2 PA11 PWM3 PB1 PWM4
 
+float pitch = 0, roll = 0, yaw = 0; //欧拉角
+//
+volatile u16 level1 = T / 2, level2 = T / 2, level3 = T / 2, level4 = T / 2;
 
-float pitch=0,roll=0,yaw=0; 		//欧拉角
-// 
+int main(void)
+{
 
- int main(void)
- {	 
-	
-	u16 level1=T/2,level2=T/2,level3=T/2,level4=T/2;
-	volatile short t=5;
-
-	
 	// short aacx=0,aacy=0,aacz=0;		//加速度传感器原始数据
 	// short gyrox=0,gyroy=0,gyroz=0;	//陀螺仪原始数据
-	
-	
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);	 //设置NVIC中断分组2:2位抢占优先级，2位响应优先级
-	uart_init(500000);	 	//串口初始化为500000
-	delay_init();	//延时初始化 
+
+	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); //设置NVIC中断分组2:2位抢占优先级，2位响应优先级
+	uart_init(500000);								//串口初始化为500000
+	delay_init();									//延时初始化
 	delay_ms(1000);
-	while(MPU_Init());					//初始化MPU6050
-	USART3_RX_STA=0;
+	while (MPU_Init())
+		; //初始化MPU6050
+	USART3_RX_STA = 0;
 	usart2_init(9600);
 	u2_printf("mpu6050 initializing...\n");
 	delay_ms(1000);
-	while(mpu_dmp_init());
-	
+	while (mpu_dmp_init())
+		;
+
 	// HC05_Set_Cmd("AT+ROLE=0");
 	// HC05_Set_Cmd("AT+RESET");	//复位ATK-HC05模块
 	// delay_ms(200);
 	u2_printf("pwm initializing...\n");
-	TIM3_PWM_Init(T,7200);
-	TIM1_PWM_Init(T,7200);			
-	TIM_SetCompare1(TIM3,level1);
-	TIM_SetCompare4(TIM1,level2);
-	TIM_SetCompare1(TIM1,level3);
-	TIM_SetCompare4(TIM3,level4);
-	
-	
 
+	PWMIO_Init();
+	TIM3_Int_Init(50, 7200);
+	// TIM3_PWM_Init(T,7200);
+	// TIM1_PWM_Init(T,7200);
+	// TIM_SetCompare1(TIM3,level1);
+	// TIM_SetCompare4(TIM1,level2);
+	// TIM_SetCompare1(TIM1,level3);
+	// TIM_SetCompare4(TIM3,level4);
 
- 	while(1)
+	while (1)
 	{
-		mpu_dmp_get_data(&pitch,&roll,&yaw);
+		mpu_dmp_get_data(&pitch, &roll, &yaw);
 		//MPU_Get_Accelerometer(&aacx,&aacy,&aacz);	//得到加速度传感器数据
 		//MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz);	//得到陀螺仪数据
 		//IMUupdate(gyrox,gyroy,gyroz,aacx,aacy,aacz);
-		u2_printf("yaw:%.2f  pitch:%.2f  roll:%.2f\n",yaw,pitch,roll);
+		u2_printf("yaw:%.2f  pitch:%.2f  roll:%.2f\n", yaw, pitch, roll);
 		delay_ms(200);
 		// u2_printf("ax:%.3f ay:%.3f az:%.3f",aacx,aacy,aacz);
 		// delay_ms(100);
 		// u2_printf("gx:%.3f gy:%.3f gz:%.3f",gyrox,gyroy,gyroz);
-		
-		if(USART3_RX_STA&0X8000)			//接收到一次数据了
+
+		if (USART3_RX_STA & 0X8000) //接收到一次数据了
 		{
-			
- 		
-			
-			u2_printf("your keyval is '%c' !!!\n",USART3_RX_BUF[0]);
+
+			u8 flag = 0;
+			u2_printf("your keyval is '%c' !!!\n", USART3_RX_BUF[0]);
 			switch (USART3_RX_BUF[0])
 			{
-				
+
 			case '1':
-				if(level1>STEP||level1<T-STEP)
-				level1=level1+STEP;
+				if (level1 < T - STEP)
+					level1 = level1 + STEP;
+				else
+					flag = 1;
 				break;
 			case '2':
-				if(level1>STEP||level1<T-STEP)
-				level1=level1-STEP;
+				if (level1 > STEP)
+					level1 = level1 - STEP;
+				else
+					flag = 1;
 				break;
 			case '3':
-				if(level2>STEP||level2<T-STEP)
-				level2=level2+STEP;
+				if (level2 < T - STEP)
+					level2 = level2 + STEP;
+				else
+					flag = 1;
 				break;
 			case '4':
-				if(level2>STEP||level2<T-STEP)
-				level2=level2-STEP;
+				if (level2 > STEP)
+					level2 = level2 - STEP;
+				else
+					flag = 1;
 				break;
 			case '5':
-				if(level3>STEP||level3<T-STEP)
-				level3=level3+STEP;
+				if (level3 < T - STEP)
+					level3 = level3 + STEP;
+				else
+					flag = 1;
 				break;
 			case '6':
-				if(level3>STEP||level3<T-STEP)
-				level3=level3-STEP;
+				if (level3 > STEP)
+					level3 = level3 - STEP;
+				else
+					flag = 1;
 				break;
 			case 'A':
-				if(level4>STEP||level4<T-STEP)
-				level4=level4+STEP;
+				if (level4 < T - STEP)
+					level4 = level4 + STEP;
+				else
+					flag = 1;
 				break;
 			case 'B':
-				if(level4>STEP||level4<T-STEP)
-				level4=level4-STEP;
+				if (level4 > STEP)
+					level4 = level4 - STEP;
+				else
+					flag = 1;
+				break;
+			case 'C':
+				if (level4 < T - STEP && level1 < T - STEP && level2 < T - STEP && level3 < T - STEP)
+				{
+					level1 = level1 + STEP;
+					level2 = level2 + STEP;
+					level3 = level3 + STEP;
+					level4 = level4 + STEP;
+				}
+				else
+					flag = 1;
+				break;
+			case 'D':
+				if (level1 > STEP && level2 > STEP && level3 > STEP && level4 > STEP)
+				{
+					level1 = level1 - STEP;
+					level2 = level2 - STEP;
+					level3 = level3 - STEP;
+					level4 = level4 - STEP;
+				}
+				else
+					flag = 1;
 				break;
 			default:
+				u2_printf("error !!! invalid keyval !!!\n");
 				break;
 			}
-			
-			TIM_SetCompare1(TIM3,level1);
-			TIM_SetCompare4(TIM1,level2);
-			TIM_SetCompare1(TIM1,level3);
-			TIM_SetCompare4(TIM3,level4);
- 			USART3_RX_STA=0;
-			u2_printf("pwm adjustment is made !!!\n");	 
-		}	 					
+
+			// TIM_SetCompare1(TIM3,level1);
+			// TIM_SetCompare4(TIM1,level2);
+			// TIM_SetCompare1(TIM1,level3);
+			// TIM_SetCompare4(TIM3,level4);
+			USART3_RX_STA = 0;
+			if (flag)
+				u2_printf("pwm adjustment is out of range !!!\n");
+			else
+			{
+				u2_printf("pwm adjustment is made !!!\n");
+				u2_printf("current pwm 1 %d0%%\n", level1);
+				u2_printf("current pwm 2 %d0%%\n", level2);
+				u2_printf("current pwm 3 %d0%%\n", level3);
+				u2_printf("current pwm 4 %d0%%\n", level4);
+			}
+		}
 		// if(mpu_dmp_get_data(&pitch,&roll,&yaw)==0)
-		// { 
-			
-		// 	// 
-		
+		// {
+
+		// 	//
+
 		// 	// if(report)mpu6050_send_data(aacx,aacy,aacz,gyrox,gyroy,gyroz);//用自定义帧发送加速度和陀螺仪原始数据
 		// 	// if(report)usart1_report_imu(aacx,aacy,aacz,gyrox,gyroy,gyroz,(int)(roll*100),(int)(pitch*100),(int)(yaw*10));
-			
-			
+
 		// }
-		
-	} 	
+	}
 }
- 
+
 // void MPU6050_Report(short pitch,short roll,short yaw)
 // {
 // 	u8 sendbuf[15]={0};
@@ -174,27 +207,27 @@ float pitch=0,roll=0,yaw=0; 		//欧拉角
 // {
 // 	u8 send_buf[32];
 // 	u8 i;
-// 	if(len>28)return;	//最多28字节数据 
+// 	if(len>28)return;	//最多28字节数据
 // 	send_buf[len+3]=0;	//校验数置零
 // 	send_buf[0]=0X88;	//帧头
 // 	send_buf[1]=fun;	//功能字
 // 	send_buf[2]=len;	//数据长度
 // 	for(i=0;i<len;i++)send_buf[3+i]=data[i];			//复制数据
-// 	for(i=0;i<len+3;i++)send_buf[len+3]+=send_buf[i];	//计算校验和	
-// 	for(i=0;i<len+4;i++)usart1_send_char(send_buf[i]);	//发送数据到串口1 
+// 	for(i=0;i<len+3;i++)send_buf[len+3]+=send_buf[i];	//计算校验和
+// 	for(i=0;i<len+4;i++)usart1_send_char(send_buf[i]);	//发送数据到串口1
 // }
 // //发送加速度传感器数据和陀螺仪数据
 // //aacx,aacy,aacz:x,y,z三个方向上面的加速度值
 // //gyrox,gyroy,gyroz:x,y,z三个方向上面的陀螺仪值
 // void mpu6050_send_data(short aacx,short aacy,short aacz,short gyrox,short gyroy,short gyroz)
 // {
-// 	u8 tbuf[12]; 
+// 	u8 tbuf[12];
 // 	tbuf[0]=(aacx>>8)&0XFF;
 // 	tbuf[1]=aacx&0XFF;
 // 	tbuf[2]=(aacy>>8)&0XFF;
 // 	tbuf[3]=aacy&0XFF;
 // 	tbuf[4]=(aacz>>8)&0XFF;
-// 	tbuf[5]=aacz&0XFF; 
+// 	tbuf[5]=aacz&0XFF;
 // 	tbuf[6]=(gyrox>>8)&0XFF;
 // 	tbuf[7]=gyrox&0XFF;
 // 	tbuf[8]=(gyroy>>8)&0XFF;
@@ -202,7 +235,7 @@ float pitch=0,roll=0,yaw=0; 		//欧拉角
 // 	tbuf[10]=(gyroz>>8)&0XFF;
 // 	tbuf[11]=gyroz&0XFF;
 // 	usart1_niming_report(0XA1,tbuf,12);//自定义帧,0XA1
-// }	
+// }
 // //通过串口1上报结算后的姿态数据给电脑
 // //aacx,aacy,aacz:x,y,z三个方向上面的加速度值
 // //gyrox,gyroy,gyroz:x,y,z三个方向上面的陀螺仪值
@@ -211,7 +244,7 @@ float pitch=0,roll=0,yaw=0; 		//欧拉角
 // //yaw:航向角.单位为0.1度 0 -> 3600  对应 0 -> 360.0度
 // void usart1_report_imu(short aacx,short aacy,short aacz,short gyrox,short gyroy,short gyroz,short roll,short pitch,short yaw)
 // {
-// 	u8 tbuf[28]; 
+// 	u8 tbuf[28];
 // 	u8 i;
 // 	for(i=0;i<28;i++)tbuf[i]=0;//清0
 // 	tbuf[0]=(aacx>>8)&0XFF;
@@ -219,13 +252,13 @@ float pitch=0,roll=0,yaw=0; 		//欧拉角
 // 	tbuf[2]=(aacy>>8)&0XFF;
 // 	tbuf[3]=aacy&0XFF;
 // 	tbuf[4]=(aacz>>8)&0XFF;
-// 	tbuf[5]=aacz&0XFF; 
+// 	tbuf[5]=aacz&0XFF;
 // 	tbuf[6]=(gyrox>>8)&0XFF;
 // 	tbuf[7]=gyrox&0XFF;
 // 	tbuf[8]=(gyroy>>8)&0XFF;
 // 	tbuf[9]=gyroy&0XFF;
 // 	tbuf[10]=(gyroz>>8)&0XFF;
-// 	tbuf[11]=gyroz&0XFF;	
+// 	tbuf[11]=gyroz&0XFF;
 // 	tbuf[18]=(roll>>8)&0XFF;
 // 	tbuf[19]=roll&0XFF;
 // 	tbuf[20]=(pitch>>8)&0XFF;
@@ -233,7 +266,7 @@ float pitch=0,roll=0,yaw=0; 		//欧拉角
 // 	tbuf[22]=(yaw>>8)&0XFF;
 // 	tbuf[23]=yaw&0XFF;
 // 	usart1_niming_report(0XAF,tbuf,28);//飞控显示帧,0XAF
-// }  
+// }
 
 //float q0 = 1, q1 = 0, q2 = 0, q3 = 0;    // 初始姿态四元数，由上篇博文提到的变换四元数公式得来
 // float exInt = 0, eyInt = 0, ezInt = 0;    //当前加计测得的重力加速度在三轴上的分量
@@ -255,7 +288,7 @@ float pitch=0,roll=0,yaw=0; 		//欧拉角
 //   float q1q3 = q1*q3;
 //   float q2q2 = q2*q2;
 //   float q2q3 = q2*q3;
-//   float q3q3 = q3*q3;      
+//   float q3q3 = q3*q3;
 //   if(ax*ay*az==0)//加计处于自由落体状态时不进行姿态解算，因为会产生分母无穷大的情况
 //         return;
 //   norm = sqrt(ax*ax + ay*ay + az*az);//单位化加速度计，
@@ -264,13 +297,13 @@ float pitch=0,roll=0,yaw=0; 		//欧拉角
 //   az = az / norm;
 //   //用当前姿态计算出重力在三个轴上的分量，
 //   //参考坐标n系转化到载体坐标b系的用四元数表示的方向余弦矩阵第三列即是（博文一中有提到）
-//   vx = 2*(q1q3 - q0q2);        
+//   vx = 2*(q1q3 - q0q2);
 //   vy = 2*(q0q1 + q2q3);
 //   vz = q0q0 - q1q1 - q2q2 + q3q3 ;
 //   //计算测得的重力与计算得重力间的误差，向量外积可以表示这一误差
 //   //原因我理解是因为两个向量是单位向量且sin0等于0
 //   //不过要是夹角是180度呢~这个还没理解
-//   ex = (ay*vz - az*vy) ;                                                                  
+//   ex = (ay*vz - az*vy) ;
 //   ey = (az*vx - ax*vz) ;
 //   ez = (ax*vy - ay*vx) ;
 
