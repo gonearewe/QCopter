@@ -25,7 +25,7 @@
 //返回值:0,成功;1,失败.
 u8 HC05_Init(void)
 {
-	u8 retry=10,t;	  		 
+              	u8 retry=10,t;	  		 
 	//u8 temp=1;
 	u8 temp=0;
 	

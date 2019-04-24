@@ -12,9 +12,10 @@
 #include "usart3.h"
 #include "hc05.h"
 #include "timer.h"
+#define STD (T / 2)
 
-#define STEP 1
-#define T 10
+#define STEP 3
+#define T 30
 void MPU6050_Report(short pitch, short roll, short yaw);
 //PA5 SCL PA7 SDA
 //PA3 RX2 PA2 TX2
@@ -29,7 +30,8 @@ int main(void)
 
 	// short aacx=0,aacy=0,aacz=0;		//加速度传感器原始数据
 	// short gyrox=0,gyroy=0,gyroz=0;	//陀螺仪原始数据
-
+	u8 feedback_flag =0;
+	u8 modify_flag =0;
 	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); //设置NVIC中断分组2:2位抢占优先级，2位响应优先级
 	uart_init(500000);								//串口初始化为500000
 	delay_init();									//延时初始化
@@ -49,7 +51,7 @@ int main(void)
 	u2_printf("pwm initializing...\n");
 
 	PWMIO_Init();
-	TIM3_Int_Init(50, 7200);
+	TIM3_Int_Init(20, 7200);
 	// TIM3_PWM_Init(T,7200);
 	// TIM1_PWM_Init(T,7200);
 	// TIM_SetCompare1(TIM3,level1);
@@ -63,8 +65,41 @@ int main(void)
 		//MPU_Get_Accelerometer(&aacx,&aacy,&aacz);	//得到加速度传感器数据
 		//MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz);	//得到陀螺仪数据
 		//IMUupdate(gyrox,gyroy,gyroz,aacx,aacy,aacz);
-		u2_printf("yaw:%.2f  pitch:%.2f  roll:%.2f\n", yaw, pitch, roll);
-		delay_ms(200);
+		if(feedback_flag) u2_printf("yaw:%.2f  pitch:%.2f  roll:%.2f\n", yaw, pitch, roll);
+		delay_ms(50);
+		//if(modify_flag)
+		{
+			volatile short M1=STD,M2=STD,M3=STD,M4=STD;
+			volatile short yaw_modify=0,pitch_modify=0,roll_modify=0;
+			pitch_modify=pitch/10;
+
+			if(roll>0)
+				roll_modify=10-(roll-90)/10;
+			else
+				roll_modify=-10-(roll+90)/10;
+
+			if(yaw>0)
+				yaw_modify=10-yaw/20;
+			else
+				yaw_modify=-10-yaw/20;
+			
+			M1=STD+pitch_modify-roll_modify-yaw_modify;
+			M2=STD+pitch_modify+roll_modify+yaw_modify;
+			M3=STD-pitch_modify+roll_modify-yaw_modify;
+			M4=STD-pitch_modify-roll_modify+yaw_modify;
+			u2_printf("M1:%d M2:%d M3:%d M4:%d\n",M1,M2,M3,M4);
+			if(M2>T-STEP)	M2=T-STEP;
+			if(M1>T-STEP)	M1=T-STEP;
+			if(M4>T-STEP)	M4=T-STEP;
+			if(M3>T-STEP)	M3=T-STEP;
+				level3=M2;
+				level4=M4;
+				level1=M1;
+				level2=M3;
+				
+			
+			
+		}
 		// u2_printf("ax:%.3f ay:%.3f az:%.3f",aacx,aacy,aacz);
 		// delay_ms(100);
 		// u2_printf("gx:%.3f gy:%.3f gz:%.3f",gyrox,gyroy,gyroz);
@@ -147,6 +182,10 @@ int main(void)
 				else
 					flag = 1;
 				break;
+			case 'F':
+				feedback_flag =!feedback_flag;
+			case 'M':
+				modify_flag =!modify_flag;
 			default:
 				u2_printf("error !!! invalid keyval !!!\n");
 				break;

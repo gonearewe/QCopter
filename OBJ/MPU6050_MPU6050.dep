@@ -1,5 +1,5 @@
 Dependencies for Project 'MPU6050', Target 'MPU6050': (DO NOT MODIFY !)
-F (.\main.c)(0x5CBA8C69)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I..\HARDWARE\LED -I..\SYSTEM\delay -I..\SYSTEM\sys -I..\SYSTEM\usart -I..\USER -I..\STM32F10x_FWLib\inc -I..\CORE -I..\HARDWARE\ -I..\HARDWARE\LCD -I..\HARDWARE\MPU6050\eMPL -I..\HARDWARE\MPU6050 -I..\USMART -I..\HARDWARE\KEY-I "D:\MyProjects\STM32 Projects\QCopter\USER\RTE"-I C:\Keil_v5NEW\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\Device\Include-I C:\Keil_v5NEW\ARM\CMSIS\Include-D__UVISION_VERSION="514" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\main.o --omf_browse ..\obj\main.crf --depend ..\obj\main.d)
+F (.\main.c)(0x5CBFC301)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I..\HARDWARE\LED -I..\SYSTEM\delay -I..\SYSTEM\sys -I..\SYSTEM\usart -I..\USER -I..\STM32F10x_FWLib\inc -I..\CORE -I..\HARDWARE\ -I..\HARDWARE\LCD -I..\HARDWARE\MPU6050\eMPL -I..\HARDWARE\MPU6050 -I..\USMART -I..\HARDWARE\KEY-I "D:\MyProjects\STM32 Projects\QCopter\USER\RTE"-I C:\Keil_v5NEW\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\Device\Include-I C:\Keil_v5NEW\ARM\CMSIS\Include-D__UVISION_VERSION="514" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\main.o --omf_browse ..\obj\main.crf --depend ..\obj\main.d)
 I (..\HARDWARE\LED\led.h)(0x5510227D)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\USER\stm32f10x.h)(0x4D783CB4)
@@ -352,7 +352,7 @@ I (..\HARDWARE\MPU6050\eMPL\dmpmap.h)(0x50CA9A0C)
 I (..\SYSTEM\usart\usart.h)(0x50517A82)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\SYSTEM\delay\delay.h)(0x555AC82B)
-F (..\HARDWARE\hc05.c)(0x5CB09817)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I..\HARDWARE\LED -I..\SYSTEM\delay -I..\SYSTEM\sys -I..\SYSTEM\usart -I..\USER -I..\STM32F10x_FWLib\inc -I..\CORE -I..\HARDWARE\ -I..\HARDWARE\LCD -I..\HARDWARE\MPU6050\eMPL -I..\HARDWARE\MPU6050 -I..\USMART -I..\HARDWARE\KEY-I "D:\MyProjects\STM32 Projects\QCopter\USER\RTE"-I C:\Keil_v5NEW\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\Device\Include-I C:\Keil_v5NEW\ARM\CMSIS\Include-D__UVISION_VERSION="514" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\hc05.o --omf_browse ..\obj\hc05.crf --depend ..\obj\hc05.d)
+F (..\HARDWARE\hc05.c)(0x5CBFBFBA)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I..\HARDWARE\LED -I..\SYSTEM\delay -I..\SYSTEM\sys -I..\SYSTEM\usart -I..\USER -I..\STM32F10x_FWLib\inc -I..\CORE -I..\HARDWARE\ -I..\HARDWARE\LCD -I..\HARDWARE\MPU6050\eMPL -I..\HARDWARE\MPU6050 -I..\USMART -I..\HARDWARE\KEY-I "D:\MyProjects\STM32 Projects\QCopter\USER\RTE"-I C:\Keil_v5NEW\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\Device\Include-I C:\Keil_v5NEW\ARM\CMSIS\Include-D__UVISION_VERSION="514" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\hc05.o --omf_browse ..\obj\hc05.crf --depend ..\obj\hc05.d)
 I (..\SYSTEM\delay\delay.h)(0x555AC82B)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\USER\stm32f10x.h)(0x4D783CB4)
@@ -390,7 +390,7 @@ I (..\HARDWARE\hc05.h)(0x554197C0)
 I (..\HARDWARE\LED\led.h)(0x5510227D)
 I (C:\Keil_v5NEW\ARM\ARMCC\include\string.h)(0x5475F300)
 I (C:\Keil_v5NEW\ARM\ARMCC\include\math.h)(0x5475F2FE)
-F (..\HARDWARE\timer.c)(0x5CBA8860)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I..\HARDWARE\LED -I..\SYSTEM\delay -I..\SYSTEM\sys -I..\SYSTEM\usart -I..\USER -I..\STM32F10x_FWLib\inc -I..\CORE -I..\HARDWARE\ -I..\HARDWARE\LCD -I..\HARDWARE\MPU6050\eMPL -I..\HARDWARE\MPU6050 -I..\USMART -I..\HARDWARE\KEY-I "D:\MyProjects\STM32 Projects\QCopter\USER\RTE"-I C:\Keil_v5NEW\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\Device\Include-I C:\Keil_v5NEW\ARM\CMSIS\Include-D__UVISION_VERSION="514" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\timer.o --omf_browse ..\obj\timer.crf --depend ..\obj\timer.d)
+F (..\HARDWARE\timer.c)(0x5CBF2105)(-c --cpu Cortex-M3 -g -O0 --apcs=interwork --split_sections -I..\HARDWARE\LED -I..\SYSTEM\delay -I..\SYSTEM\sys -I..\SYSTEM\usart -I..\USER -I..\STM32F10x_FWLib\inc -I..\CORE -I..\HARDWARE\ -I..\HARDWARE\LCD -I..\HARDWARE\MPU6050\eMPL -I..\HARDWARE\MPU6050 -I..\USMART -I..\HARDWARE\KEY-I "D:\MyProjects\STM32 Projects\QCopter\USER\RTE"-I C:\Keil_v5NEW\ARM\PACK\Keil\STM32F1xx_DFP\1.0.5\Device\Include-I C:\Keil_v5NEW\ARM\CMSIS\Include-D__UVISION_VERSION="514" -DSTM32F10X_MD -DSTM32F10X_MD -DUSE_STDPERIPH_DRIVER-o ..\obj\timer.o --omf_browse ..\obj\timer.crf --depend ..\obj\timer.d)
 I (..\HARDWARE\timer.h)(0x5CB9D555)
 I (..\SYSTEM\sys\sys.h)(0x550F951B)
 I (..\USER\stm32f10x.h)(0x4D783CB4)
